@@ -16,12 +16,18 @@ class ComvertMtToCSV {
 
         $fp = fopen($this->read_path,'r');
         if ($fp) {
+            $temp_text = '';
+            $date_flg = false;
             while (($buffer = fgets($fp)) !== false) {
-                $temp_text = '';
-                if(preg_match('/^DATE:(.*)$/', $buffer) == 1) {
+                if(preg_match('/^CONVERT BREAKS:(.*)$/', $buffer) == 1) {
+                    $date_flg = true;
+
+                }
+                if(preg_match('/^DATE:(.*)$/', $buffer) == 1 && $date_flg) {
                     $temp_text = $this->trim_data_text($buffer);
                     $this->registDate[] = $temp_text;
                     $this->updateDate[] = $temp_text;
+                    $date_flg = false;
                     continue;
                 }
                 if(preg_match('/^BASENAME:(.*)$/', $buffer) == 1) {
@@ -67,7 +73,7 @@ class ComvertMtToCSV {
         $temp = trim($url, 'BASENAME:');
         $temp = trim($temp);
         $temp = html_entity_decode($temp, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401);
-        $temp = urlencode($temp);
+        $temp = $this->encodeURI($temp);
         $temp2 = $this->blog_url . $temp;
         $temp2 = trim($temp2);
         return $temp2;
@@ -77,6 +83,24 @@ class ComvertMtToCSV {
         $temp = trim($title, 'TITLE: ');
         $temp = trim($temp);
         return $temp;
+    }
+
+    function encodeURI($url) {
+        // http://php.net/manual/en/function.rawurlencode.php
+        // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/encodeURI
+        $unescaped = array(
+            '%2D'=>'-','%5F'=>'_','%2E'=>'.','%21'=>'!', '%7E'=>'~',
+            '%2A'=>'*', '%27'=>"'", '%28'=>'(', '%29'=>')'
+        );
+        $reserved = array(
+            '%3B'=>';','%2C'=>',','%2F'=>'/','%3F'=>'?','%3A'=>':',
+            '%40'=>'@','%26'=>'&','%3D'=>'=','%2B'=>'+','%24'=>'$'
+        );
+        $score = array(
+            '%23'=>'#'
+        );
+        return strtr(rawurlencode($url), array_merge($reserved,$unescaped,$score));
+    
     }
 }
 
