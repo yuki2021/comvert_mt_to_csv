@@ -58,15 +58,17 @@ class ComvertMtToCSV {
     function trim_data_text($date) {
         $temp = trim($date, 'DATE: ');
         $temp = trim($temp);
-        return $temp;
+        $time_stamp = strtotime($temp);
+        $date_str = date("Y-m-d\TH:i:s+09:00", $time_stamp);
+        return $date_str;
     }
 
     function trim_url_text($url) {
-
-        global $blog_url;
-
-        $temp = trim($url, 'BASENAME: ');
-        $temp2 = $blog_url . $temp;
+        $temp = trim($url, 'BASENAME:');
+        $temp = trim($temp);
+        $temp = html_entity_decode($temp, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401);
+        $temp = urlencode($temp);
+        $temp2 = $this->blog_url . $temp;
         $temp2 = trim($temp2);
         return $temp2;
     }
@@ -80,7 +82,7 @@ class ComvertMtToCSV {
 
 $obj = new ComvertMtToCSV();
 $obj->blog_url = 'https://www.ituki-yu2.net/entry/';
-$obj->read_path = './text.txt';
+$obj->read_path = './www.ituki-yu2.net.export.txt';
 $obj->write_path = './write_new_csv.csv';
 $obj->file_load();
 $obj->file_read();
